@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>For You, My Love</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+body{min-height:100vh;background:linear-gradient(160deg,#ffe4ef,#ffc2d4,#ffb3c6);font-family:Georgia,serif;overflow-x:hidden;position:relative;}
+.flower{position:fixed;top:-40px;pointer-events:none;animation:fall linear infinite;user-select:none;z-index:0;}
+@keyframes fall{0%{transform:translateY(0) rotate(0deg);opacity:1;}85%{opacity:1;}100%{transform:translateY(110vh) rotate(400deg);opacity:0;}}
+.page{display:none;min-height:100vh;align-items:center;justify-content:center;flex-direction:column;padding:20px;position:relative;z-index:10;}
+.page.active{display:flex;}
+
+/* LOVE QUESTION PAGE */
+.love-card{background:rgba(255,255,255,0.88);border-radius:28px;padding:48px 36px;max-width:440px;width:92%;text-align:center;box-shadow:0 8px 40px rgba(255,100,150,0.2);}
+.big-heart{font-size:64px;animation:pulse 1.4s ease-in-out infinite;display:block;margin-bottom:16px;}
+@keyframes pulse{0%,100%{transform:scale(1);}50%{transform:scale(1.2);}}
+.love-q{font-size:1.6rem;color:#c9184a;margin-bottom:8px;font-weight:700;}
+.love-sub{font-size:1rem;color:#ff758f;font-style:italic;margin-bottom:32px;}
+.btn-row{display:flex;gap:16px;justify-content:center;flex-wrap:wrap;}
+.btn-yes{background:linear-gradient(135deg,#ff4d6d,#ff85a1);color:white;border:none;padding:14px 36px;font-size:1.1rem;border-radius:30px;cursor:pointer;font-family:Georgia,serif;box-shadow:0 4px 18px rgba(255,77,109,0.4);transition:transform 0.2s;}
+.btn-yes:hover{transform:scale(1.08);}
+.btn-no{background:rgba(255,255,255,0.6);color:#ff4d6d;border:2px solid #ff85a1;padding:14px 36px;font-size:1.1rem;border-radius:30px;cursor:pointer;font-family:Georgia,serif;transition:all 0.2s;position:relative;}
+
+/* NAV */
+.nav{display:flex;gap:10px;margin-bottom:28px;flex-wrap:wrap;justify-content:center;}
+.nav-btn{background:rgba(255,255,255,0.7);color:#c9184a;border:2px solid #ffb3c6;padding:11px 22px;font-size:0.92rem;border-radius:25px;cursor:pointer;font-family:Georgia,serif;transition:all 0.2s;backdrop-filter:blur(6px);}
+.nav-btn:hover,.nav-btn.active{background:linear-gradient(135deg,#ff4d6d,#ff85a1);color:white;border-color:transparent;}
+
+/* QUOTES PAGE */
+.quote-card{background:rgba(255,255,255,0.88);border-radius:24px;padding:38px 32px;max-width:460px;width:92%;text-align:center;box-shadow:0 8px 30px rgba(255,100,150,0.15);}
+.q-icon{font-size:42px;margin-bottom:12px;}
+.q-text{color:#590d22;font-size:1.08rem;font-style:italic;line-height:1.8;margin-bottom:24px;min-height:90px;transition:opacity 0.3s, transform 0.3s;}
+.q-author{color:#ff758f;font-size:0.88rem;margin-bottom:20px;}
+.q-btn{background:linear-gradient(135deg,#ff4d6d,#ff85a1);color:white;border:none;padding:12px 32px;font-size:0.95rem;border-radius:25px;cursor:pointer;font-family:Georgia,serif;font-weight:bold;box-shadow:0 4px 12px rgba(255,77,109,0.3);transition:all 0.2s;}
+.q-btn:hover{transform:scale(1.05);background:linear-gradient(135deg,#ff758f,#ff4d6d);}
+.q-num{font-size:12px;color:#ff85a1;margin-top:14px;font-weight:bold;}
+
+/* PHOTOS PAGE - ONE UNIFIED FRAMED HEART WITH ANIMATED BORDER */
+.photos-title{color:#c9184a;font-size:1.4rem;font-weight:700;margin-bottom:6px;text-align:center;}
+.photos-sub{color:#ff758f;font-style:italic;font-size:0.9rem;margin-bottom:24px;text-align:center;}
+
+.heart-frame-container {
+    position: relative;
+    width: 290px;
+    height: 290px;
+    margin: 0 auto 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Dynamic shifting border animation wrapping around the clipped heart shape */
+.animated-heart-border {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(45deg, #ff4d6d, #ff85a1, #ffb3c6, #ff4d6d);
+    background-size: 300% 300%;
+    clip-path: url(#heartClip);
+    animation: borderGlow 4s linear infinite, framePulse 2.5s ease-in-out infinite alternate;
+}
+
+.unified-heart-slot {
+    position: absolute;
+    width: calc(100% - 10px);
+    height: calc(100% - 10px);
+    background: #fff0f5;
+    clip-path: url(#heartClip);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    overflow: hidden;
+    z-index: 2;
+}
+
+.unified-heart-slot input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;z-index:5;}
+.unified-heart-slot img{width:100%;height:100%;object-fit:cover;position:absolute;inset:0;display:none;}
+.unified-heart-slot .plus-icon {font-size:42px;color:#ff4d6d;display:flex;flex-direction:column;align-items:center;font-weight:normal;}
+.unified-heart-slot .plus-icon span {font-size:11px;font-family:Georgia,serif;color:#ff758f;margin-top:4px;font-style:italic;}
+
+@keyframes borderGlow {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+@keyframes framePulse {
+    0% { transform: scale(1); }
+    100% { transform: scale(1.03); box-shadow: 0 0 25px rgba(255, 77, 109, 0.4); }
+}
+
+/* HEART ANIMATION PAGE */
+.heart-anim-wrap{display:flex;flex-direction:column;align-items:center;}
+.heart-canvas-container{position:relative;width:280px;height:260px;margin-bottom:20px;}
+canvas#heartCanvas{display:block;}
+.name-input-row{display:flex;gap:10px;align-items:center;margin-bottom:16px;}
+.name-input{background:rgba(255,255,255,0.8);border:2px solid #ffb3c6;border-radius:20px;padding:10px 18px;font-size:1rem;font-family:Georgia,serif;color:#c9184a;outline:none;width:180px;text-align:center;}
+.name-input:focus{border-color:#ff4d6d;}
+
+/* FLYING BUTTERFLIES & TEXT POPUP ENGINE */
+.butterfly-flyer {
+    position: fixed;
+    pointer-events: none;
+    font-size: 22px;
+    z-index: 9999;
+    /* Smooth transition for moving to heart shape and flying away */
+    transition: left 0.8s cubic-bezier(0.25, 1, 0.5, 1), 
+                top 0.8s cubic-bezier(0.25, 1, 0.5, 1), 
+                transform 0.8s ease, 
+                opacity 1s ease;
+}
+
+.love-pop-text {
+    position: fixed;
+    color: #c9184a;
+    font-size: 1.6rem;
+    font-weight: bold;
+    font-family: Georgia, serif;
+    text-shadow: 0 4px 15px rgba(255,255,255,0.9), 0 0 10px rgba(255,77,109,0.5);
+    background: rgba(255, 240, 245, 0.9);
+    padding: 10px 24px;
+    border-radius: 20px;
+    border: 2px solid #ffb3c6;
+    z-index: 10000;
+    pointer-events: none;
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.5);
+    transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+.love-pop-text.show {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+}
+</style>
+</head>
+<body>
+
+<!-- Hidden SVG Clip Definition -->
+<svg style="position: absolute; width: 0; height: 0;">
+  <defs>
+    <clipPath id="heartClip" clipPathUnits="objectBoundingBox">
+      <path d="M0.5,0.85 C0.5,0.85 0.05,0.52 0.05,0.3 C0.05,0.14 0.18,0.06 0.3,0.06 C0.38,0.06 0.45,0.11 0.5,0.18 C0.55,0.11 0.62,0.06 0.7,0.06 C0.82,0.06 0.95,0.14 0.95,0.3 C0.95,0.52 0.5,0.85 0.5,0.85 Z"/>
+    </clipPath>
+  </defs>
+</svg>
+
+<!-- Sadhai Sadhai Song Integration Setup -->
+<audio id="sadhaiMusic" loop>
+    <source src="sadhai_sadhai.mp3" type="audio/mpeg">
+</audio>
+
+<!-- PAGE 1: LOVE QUESTION[cite: 1] -->
+<div class="page active" id="pageQ">
+  <div class="love-card">
+    <span class="big-heart">💕</span>
+    <h1 class="love-q">Do you love me?</h1>
+    <p class="love-sub">Answer honestly, my heart...</p>
+    <div class="btn-row" id="loveRow">
+      <button class="btn-yes" onclick="goYes()">Yes, I do 💗</button>
+      <button class="btn-no" id="noBtn" onclick="sayNo()">No...</button>
+    </div>
+    <p id="sureMsg" style="display:none;color:#ff4d6d;font-style:italic;margin-top:18px;font-size:0.95rem;"></p>
+  </div>
+</div>
+
+<!-- MAIN APP (shown after yes)[cite: 1] -->
+<div class="page" id="pageMain">
+  <div class="nav">
+    <button class="nav-btn active" id="nav1" onclick="showSection('quotes',1)">💬 Mero sanu ko lagi</button>
+    <button class="nav-btn" id="nav2" onclick="showSection('photos',2)">📸 Our Photos</button>
+    <button class="nav-btn" id="nav3" onclick="showSection('heart',3)">💖 Heart for You</button>
+  </div>
+
+  <!-- QUOTES[cite: 1] -->
+  <div id="secQuotes">
+    <div class="quote-card">
+      <div class="q-icon">🌹</div>
+      <p class="q-text" id="qt"></p>
+      <p class="q-author" id="qa"></p>
+      <button class="q-btn" onclick="nextQ()">Next Message 🌷</button>
+      <p class="q-num" id="qnum"></p>
+    </div>
+  </div>
+
+  <!-- PHOTOS - DESIGNED FOR A SINGLE COMPLETE COMBINED FRAME[cite: 1] -->
+  <div id="secPhotos" style="display:none;text-align:center;">
+    <p class="photos-title">Our Memories 🌸</p>
+    <p class="photos-sub">Tap the heart to add your beautiful frame</p>
+    
+    <div class="heart-frame-container">
+        <div class="animated-heart-border"></div>
+        <div class="unified-heart-slot" id="mainHeartSlot" onclick="triggerMagicHeart(event)">
+            <div class="plus-icon" id="placeholderContent">
+                ❤️
+                <span>Upload Photo Frame</span>
+            </div>
+            <img id="loadedFrameImage" alt="Our Special Heart Collage">
+            <input type="file" id="frameInput" accept="image/*">
+        </div>
+    </div>
+    
+    <p style="font-size:12px;color:#ff85a1;font-style:italic;max-width:280px;margin:0 auto;line-height:1.4;">Tap after loading your photo for a magical butterfly heart surprise! ✨</p>
+  </div>
+
+  <!-- HEART ANIMATION[cite: 1] -->
+  <div id="secHeart" style="display:none;">
+    <div class="heart-anim-wrap">
+      <div class="name-input-row">
+        <input class="name-input" id="nameInput" placeholder="Her name..." maxlength="16" oninput="updateName()"/>
+      </div>
+      <div class="heart-canvas-container">
+        <canvas id="heartCanvas" width="280" height="260"></canvas>
+      </div>
+      <p style="color:#ff758f;font-style:italic;font-size:0.9rem;text-align:center;">Her name blooms inside the heart 💗</p>
+    </div>
+  </div>
+</div>
+
+<!-- Floating Love Banner Text Element Container -->
+<div class="love-pop-text" id="loveBanner">I love you so muchhh ❤️</div>
+
+<script>
+var noCount=0;
+var noMessages=["Are you sure? 🥺","Really really sure?? 💔","Think again... 🌹","Last chance... 💕","I know you love me 😊"];
+
+function sayNo(){
+  var nm=document.getElementById('noBtn');
+  var sm=document.getElementById('sureMsg');
+  if(noCount<noMessages.length-1){
+    sm.style.display='block';
+    sm.textContent=noMessages[noCount];
+    noCount++;
+    nm.textContent='Still no...';
+    if(noCount>=2){
+      setTimeout(function(){autoClickYes();},1200);
+    }
+  } else {
+    autoClickYes();
+  }
+}
+
+function autoClickYes(){
+  var nb=document.getElementById('noBtn');
+  nb.style.display='none';
+  var sm=document.getElementById('sureMsg');
+  sm.textContent="See? I knew it! 💕";
+  setTimeout(function(){goYes();},900);
+}
+
+function goYes(){
+  document.getElementById('pageQ').classList.remove('active');
+  document.getElementById('pageMain').classList.add('active');
+  
+  var music = document.getElementById('sadhaiMusic');
+  if(music) {
+      music.play().catch(function(err){
+          console.log("Audio playing caught:", err);
+      });
+  }
+  
+  initQuotes();
+  initPhotoUploader();
+  startHeartCanvas();
+}
+
+// --- 10 INTERACTIVE LOVING QUOTES[cite: 1] ---
+var quotes=[
+  {t:"Happy 5 months, my love. I know things have felt heavy and stressful lately, but no problem or situation is bigger than what we can handle together.",a:"— For her, always"},
+  {t:"Through every misunderstanding, every stressful day, and every problem you're fighting, remember I'm always on your team. I love you, always.",a:"— Written for this moment"},
+  {t:"No matter how tough life gets, holding your hand makes everything feel completely okay. You are my safe place, Sanu.",a:"— For our story"},
+  {t:"Five beautiful months down, and a whole lifetime left to go. Thank you for choosing me every single day.",a:"— Happy 5 months 💕"},
+  {t:"You are the most beautiful chapter in my life. Even when it rains, you are my bright sunshine.",a:"— From my heart to yours"},
+  {t:"I don't just love you for who you are, I love the person I become when I am right next to you.",a:"— Always yours"},
+  {t:"My love for you grows deeper with every heartbeat. You have my heart completely, Sanu.",a:"— Forever"},
+  {t:"We might fight, we might stress, but we will never let go. It's you and me against the world.",a:"— I promise"},
+  {t:"Every single little detail about you makes me fall in love all over again. You're perfect to me.",a:"— To my beautiful Sanu"},
+  {t:"No matter where life takes us, my love for you is permanent. Happy 5 Months, my beautiful Sanu! ❤️",a:"— Forever & Always"}
+];
+
+var qi=0;
+function initQuotes(){qi=0;renderQ();}
+function renderQ(){
+  var el=document.getElementById('qt');
+  el.style.opacity=0;
+  el.style.transform='scale(0.98)';
+  setTimeout(function(){
+    el.textContent=quotes[qi].t;
+    document.getElementById('qa').textContent=quotes[qi].a;
+    document.getElementById('qnum').textContent='Message '+(qi+1)+' of '+quotes.length;
+    el.style.opacity=1;
+    el.style.transform='scale(1)';
+  },300);
+}
+function nextQ(){qi=(qi+1)%quotes.length;renderQ();}
+
+// --- HEARTH SLOT LOADER ---
+function initPhotoUploader() {
+    var fileInput = document.getElementById('frameInput');
+    var displayedImage = document.getElementById('loadedFrameImage');
+    var placeholder = document.getElementById('placeholderContent');
+
+    fileInput.addEventListener('change', function(e) {
+        var file = e.target.files[0];
+        if(!file) return;
+        var reader = new FileReader();
+        reader.onload = function(event) {
+            displayedImage.src = event.target.result;
+            displayedImage.style.display = 'block';
+            placeholder.style.display = 'none';
+        };
+        reader.readAsDataURL(file);
+    });
+}
+
+// --- CALIBRATED BUTTERFLY ENGAGING ENGINE ---
+var isAnimationRunning = false; // Prevents spam clicks during the 5 second display
+
+function triggerMagicHeart(event) {
+    if(event.target.type === 'file') return;
+    if(isAnimationRunning) return; // Ignore clicks if butterflies are already holding the shape
+
+    isAnimationRunning = true;
+    var slot = document.getElementById('mainHeartSlot');
+    
+    slot.style.transform = 'scale(0.95)';
+    setTimeout(function(){ slot.style.transform = 'scale(1)'; }, 150);
+
+    var clickX = event.clientX || window.innerWidth / 2;
+    var clickY = event.clientY || window.innerHeight / 2;
+    var screenCenterX = window.innerWidth / 2;
+    var screenCenterY = window.innerHeight / 2 - 40;
+
+    var totalButterflies = 35;
+    var butterflyBatch = [];
+
+    // 1. Create butterflies and immediately command them to fly into a heart shape
+    for (var i = 0; i < totalButterflies; i++) {
+        var b = document.createElement('div');
+        b.className = 'butterfly-particle butterfly-flyer';
+        b.innerText = '🦋';
+        b.style.left = clickX + 'px';
+        b.style.top = clickY + 'px';
+        b.style.opacity = '0';
+        b.style.transform = 'scale(0.5) rotate(0deg)';
+        
+        document.body.appendChild(b);
+        butterflyBatch.push(b);
+
+        // Mathematical Heart Coordinates
+        var angleStep = (i / totalButterflies) * 2 * Math.PI;
+        var scalingMultiplier = 11.5;
+        var hX = 16 * Math.pow(Math.sin(angleStep), 3);
+        var hY = -(13 * Math.cos(angleStep) - 5 * Math.cos(2 * angleStep) - 2 * Math.cos(3 * angleStep) - Math.cos(4 * angleStep));
+
+        var finalX = screenCenterX + (hX * scalingMultiplier);
+        var finalY = screenCenterY + (hY * scalingMultiplier);
+
+        // Smooth flight into position
+        (function(element, x, y, index) {
+            setTimeout(function() {
+                element.style.opacity = '1';
+                element.style.left = x + 'px';
+                element.style.top = y + 'px';
+                element.style.transform = 'scale(' + (Math.random() * 0.3 + 0.9) + ') rotate(' + (index % 2 === 0 ? 15 : -15) + 'deg)';
+            }, 50);
+        })(b, finalX, finalY, i);
+    }
+
+    // 2. Pop up the romantic banner text
+    var banner = document.getElementById('loveBanner');
+    banner.style.left = screenCenterX + 'px';
+    banner.style.top = (screenCenterY + 180) + 'px';
+    banner.classList.add('show');
+
+    // 3. EXACTLY 5 SECONDS HOLD TIMEOUT -> Then fly away and disappear
+    setTimeout(function() {
+        // Hide the text banner
+        banner.classList.remove('show');
+
+        // Command butterflies to scatter upwards and fade out
+        butterflyBatch.forEach(function(p) {
+            // Update transition style to allow scattered chaotic fly-away motion
+            p.style.transition = 'all 1.5s cubic-bezier(0.4, 0, 1, 1)';
+            
+            // Random skyward drift targets
+            var driftX = parseFloat(p.style.left) + (Math.random() * 300 - 150);
+            var driftY = parseFloat(p.style.top) - (Math.random() * 400 + 200); 
+            
+            p.style.left = driftX + 'px';
+            p.style.top = driftY + 'px';
+            p.style.opacity = '0';
+            p.style.transform = 'scale(0.4) rotate(' + (Math.random() * 180 - 90) + 'deg)';
+            
+            // Remove elements from DOM completely after fade out completes
+            setTimeout(function() { p.remove(); }, 1500);
+        });
+
+        // Reset click lock so she can enjoy it again if she wants
+        setTimeout(function() {
+            isAnimationRunning = false;
+        }, 1500);
+
+    }, 5000); // 5000 milliseconds = 5 seconds holding time
+}
+
+var heartAnim,heartName='Sanu';
+function updateName(){
+  heartName=document.getElementById('nameInput').value||'Sanu';
+}
+
+function startHeartCanvas(){
+  var canvas=document.getElementById('heartCanvas');
+  var ctx=canvas.getContext('2d');
+  var t=0;
+  var particles=[];
+  for(var i=0;i<80;i++){
+    particles.push({a:Math.random()*Math.PI*2,r:Math.random()*0.3+0.7,speed:Math.random()*0.012+0.006,size:Math.random()*3+1.5,alpha:Math.random()});
+  }
+  function heartX(angle){return 16*Math.pow(Math.sin(angle),3);}
+  function heartY(angle){return -(13*Math.cos(angle)-5*Math.cos(2*angle)-2*Math.cos(3*angle)-Math.cos(4*angle));}
+  function draw(){
+    ctx.clearRect(0,0,280,260);
+    var cx=140,cy=130,scale=8.5;
+    ctx.save();
+    ctx.beginPath();
+    for(var a=0;a<Math.PI*2;a+=0.01){
+      var x=cx+heartX(a)*scale;
+      var y=cy+heartY(a)*scale;
+      if(a===0)ctx.moveTo(x,y); else ctx.lineTo(x,y);
+    }
+    ctx.closePath();
+    var grad=ctx.createRadialGradient(cx,cy,10,cx,cy,110);
+    grad.addColorStop(0,'rgba(255,182,203,0.6)');
+    grad.addColorStop(1,'rgba(255,77,109,0.15)');
+    ctx.fillStyle=grad;
+    ctx.fill();
+    ctx.strokeStyle='rgba(255,77,109,0.7)';
+    ctx.lineWidth=2.5;
+    ctx.stroke();
+    ctx.restore();
+
+    for(var i=0;i<particles.length;i++){
+      var p=particles[i];
+      p.a+=p.speed;
+      var pa=p.a+t*0.01;
+      var px=cx+heartX(pa)*scale*p.r;
+      var py=cy+heartY(pa)*scale*p.r;
+      ctx.beginPath();
+      ctx.arc(px,py,p.size,0,Math.PI*2);
+      var al=0.5+0.5*Math.sin(t*0.05+i);
+      ctx.fillStyle='rgba(255,77,109,'+al+')';
+      ctx.fill();
+    }
+
+    ctx.save();
+    ctx.font='bold 20px Georgia,serif';
+    ctx.textAlign='center';
+    ctx.textBaseline='middle';
+    ctx.fillStyle='rgba(201,24,74,'+(0.7+0.3*Math.sin(t*0.04))+')';
+    var nm=heartName||'Sanu';
+    ctx.shadowColor='rgba(255,150,180,0.6)';
+    ctx.shadowBlur=8;
+    ctx.fillText(nm,cx,cy);
+    ctx.restore();
+
+    t++;
+    heartAnim=requestAnimationFrame(draw);
+  }
+  if(heartAnim)cancelAnimationFrame(heartAnim);
+  draw();
+}
+
+function showSection(sec,n){
+  document.getElementById('secQuotes').style.display='none';
+  document.getElementById('secPhotos').style.display='none';
+  document.getElementById('secHeart').style.display='none';
+  document.getElementById('nav1').classList.remove('active');
+  document.getElementById('nav2').classList.remove('active');
+  document.getElementById('nav3').classList.remove('active');
+  if(sec==='quotes')document.getElementById('secQuotes').style.display='block';
+  if(sec==='photos')document.getElementById('secPhotos').style.display='block';
+  if(sec==='heart'){document.getElementById('secHeart').style.display='block';}
+  document.getElementById('nav'+n).classList.add('active');
+}
+
+var emojis=['🌹','🌷','🌸','💗','💕','🌺'];
+function makeFlower(){
+  var f=document.createElement('div');
+  f.className='flower';
+  f.textContent=emojis[Math.floor(Math.random()*emojis.length)];
+  f.style.left=(Math.random()*100)+'vw';
+  f.style.fontSize=(Math.random()*12+14)+'px';
+  var dur=Math.random()*4+5;
+  f.style.animationDuration=dur+'s';
+  document.body.appendChild(f);
+  setTimeout(function(){f.remove();},dur*1000+500);
+}
+setInterval(makeFlower,280);
+for(var i=0;i<10;i++)setTimeout(makeFlower,i*160);
+</script>
+</body>
+</html>
