@@ -77,9 +77,8 @@ body{min-height:100vh;background:linear-gradient(160deg,#ffe4ef,#ffc2d4,#ffb3c6)
 }
 
 .unified-heart-slot input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;z-index:5;}
-.unified-heart-slot img{width:100%;height:100%;object-fit:cover;position:absolute;inset:0;display:none;}
-.unified-heart-slot .plus-icon {font-size:42px;color:#ff4d6d;display:flex;flex-direction:column;align-items:center;font-weight:normal;}
-.unified-heart-slot .plus-icon span {font-size:11px;font-family:Georgia,serif;color:#ff758f;margin-top:4px;font-style:italic;}
+.unified-heart-slot img{width:100%;height:100%;object-fit:cover;position:absolute;inset:0;display:block;} /* Changed to block to display instantly */
+.unified-heart-slot .plus-icon {font-size:42px;color:#ff4d6d;display:none;flex-direction:column;align-items:center;font-weight:normal;} /* Hidden since photo is loaded */
 
 @keyframes borderGlow {
     0% { background-position: 0% 50%; }
@@ -105,7 +104,6 @@ canvas#heartCanvas{display:block;}
     pointer-events: none;
     font-size: 22px;
     z-index: 9999;
-    /* Smooth transition for moving to heart shape and flying away */
     transition: left 0.8s cubic-bezier(0.25, 1, 0.5, 1), 
                 top 0.8s cubic-bezier(0.25, 1, 0.5, 1), 
                 transform 0.8s ease, 
@@ -146,12 +144,7 @@ canvas#heartCanvas{display:block;}
   </defs>
 </svg>
 
-<!-- Sadhai Sadhai Song Integration Setup -->
-<audio id="sadhaiMusic" loop>
-    <source src="sadhai_sadhai.mp3" type="audio/mpeg">
-</audio>
-
-<!-- PAGE 1: LOVE QUESTION[cite: 1] -->
+<!-- PAGE 1: LOVE QUESTION -->
 <div class="page active" id="pageQ">
   <div class="love-card">
     <span class="big-heart">💕</span>
@@ -165,7 +158,7 @@ canvas#heartCanvas{display:block;}
   </div>
 </div>
 
-<!-- MAIN APP (shown after yes)[cite: 1] -->
+<!-- MAIN APP (shown after yes) -->
 <div class="page" id="pageMain">
   <div class="nav">
     <button class="nav-btn active" id="nav1" onclick="showSection('quotes',1)">💬 Mero sanu ko lagi</button>
@@ -173,7 +166,7 @@ canvas#heartCanvas{display:block;}
     <button class="nav-btn" id="nav3" onclick="showSection('heart',3)">💖 Heart for You</button>
   </div>
 
-  <!-- QUOTES[cite: 1] -->
+  <!-- QUOTES -->
   <div id="secQuotes">
     <div class="quote-card">
       <div class="q-icon">🌹</div>
@@ -184,10 +177,10 @@ canvas#heartCanvas{display:block;}
     </div>
   </div>
 
-  <!-- PHOTOS - DESIGNED FOR A SINGLE COMPLETE COMBINED FRAME[cite: 1] -->
+  <!-- PHOTOS -->
   <div id="secPhotos" style="display:none;text-align:center;">
     <p class="photos-title">Our Memories 🌸</p>
-    <p class="photos-sub">Tap the heart to add your beautiful frame</p>
+    <p class="photos-sub">Tap the heart for your beautiful surprise</p>
     
     <div class="heart-frame-container">
         <div class="animated-heart-border"></div>
@@ -196,15 +189,16 @@ canvas#heartCanvas{display:block;}
                 ❤️
                 <span>Upload Photo Frame</span>
             </div>
-            <img id="loadedFrameImage" alt="Our Special Heart Collage">
+            <!-- Targets NHAW3220.JPEG right inside your GitHub project repository folder -->
+            <img id="loadedFrameImage" src="NHAW3220.JPEG" alt="Our Special Heart Collage">
             <input type="file" id="frameInput" accept="image/*">
         </div>
     </div>
     
-    <p style="font-size:12px;color:#ff85a1;font-style:italic;max-width:280px;margin:0 auto;line-height:1.4;">Tap after loading your photo for a magical butterfly heart surprise! ✨</p>
+    <p style="font-size:12px;color:#ff85a1;font-style:italic;max-width:280px;margin:0 auto;line-height:1.4;">Tap your photo for a magical butterfly heart surprise! ✨</p>
   </div>
 
-  <!-- HEART ANIMATION[cite: 1] -->
+  <!-- HEART ANIMATION -->
   <div id="secHeart" style="display:none;">
     <div class="heart-anim-wrap">
       <div class="name-input-row">
@@ -252,20 +246,11 @@ function autoClickYes(){
 function goYes(){
   document.getElementById('pageQ').classList.remove('active');
   document.getElementById('pageMain').classList.add('active');
-  
-  var music = document.getElementById('sadhaiMusic');
-  if(music) {
-      music.play().catch(function(err){
-          console.log("Audio playing caught:", err);
-      });
-  }
-  
   initQuotes();
   initPhotoUploader();
   startHeartCanvas();
 }
 
-// --- 10 INTERACTIVE LOVING QUOTES[cite: 1] ---
 var quotes=[
   {t:"Happy 5 months, my love. I know things have felt heavy and stressful lately, but no problem or situation is bigger than what we can handle together.",a:"— For her, always"},
   {t:"Through every misunderstanding, every stressful day, and every problem you're fighting, remember I'm always on your team. I love you, always.",a:"— Written for this moment"},
@@ -295,7 +280,6 @@ function renderQ(){
 }
 function nextQ(){qi=(qi+1)%quotes.length;renderQ();}
 
-// --- HEARTH SLOT LOADER ---
 function initPhotoUploader() {
     var fileInput = document.getElementById('frameInput');
     var displayedImage = document.getElementById('loadedFrameImage');
@@ -314,12 +298,11 @@ function initPhotoUploader() {
     });
 }
 
-// --- CALIBRATED BUTTERFLY ENGAGING ENGINE ---
-var isAnimationRunning = false; // Prevents spam clicks during the 5 second display
+var isAnimationRunning = false; 
 
 function triggerMagicHeart(event) {
     if(event.target.type === 'file') return;
-    if(isAnimationRunning) return; // Ignore clicks if butterflies are already holding the shape
+    if(isAnimationRunning) return; 
 
     isAnimationRunning = true;
     var slot = document.getElementById('mainHeartSlot');
@@ -335,7 +318,6 @@ function triggerMagicHeart(event) {
     var totalButterflies = 35;
     var butterflyBatch = [];
 
-    // 1. Create butterflies and immediately command them to fly into a heart shape
     for (var i = 0; i < totalButterflies; i++) {
         var b = document.createElement('div');
         b.className = 'butterfly-particle butterfly-flyer';
@@ -348,7 +330,6 @@ function triggerMagicHeart(event) {
         document.body.appendChild(b);
         butterflyBatch.push(b);
 
-        // Mathematical Heart Coordinates
         var angleStep = (i / totalButterflies) * 2 * Math.PI;
         var scalingMultiplier = 11.5;
         var hX = 16 * Math.pow(Math.sin(angleStep), 3);
@@ -357,7 +338,6 @@ function triggerMagicHeart(event) {
         var finalX = screenCenterX + (hX * scalingMultiplier);
         var finalY = screenCenterY + (hY * scalingMultiplier);
 
-        // Smooth flight into position
         (function(element, x, y, index) {
             setTimeout(function() {
                 element.style.opacity = '1';
@@ -368,23 +348,16 @@ function triggerMagicHeart(event) {
         })(b, finalX, finalY, i);
     }
 
-    // 2. Pop up the romantic banner text
     var banner = document.getElementById('loveBanner');
     banner.style.left = screenCenterX + 'px';
     banner.style.top = (screenCenterY + 180) + 'px';
     banner.classList.add('show');
 
-    // 3. EXACTLY 5 SECONDS HOLD TIMEOUT -> Then fly away and disappear
     setTimeout(function() {
-        // Hide the text banner
         banner.classList.remove('show');
 
-        // Command butterflies to scatter upwards and fade out
         butterflyBatch.forEach(function(p) {
-            // Update transition style to allow scattered chaotic fly-away motion
             p.style.transition = 'all 1.5s cubic-bezier(0.4, 0, 1, 1)';
-            
-            // Random skyward drift targets
             var driftX = parseFloat(p.style.left) + (Math.random() * 300 - 150);
             var driftY = parseFloat(p.style.top) - (Math.random() * 400 + 200); 
             
@@ -393,16 +366,14 @@ function triggerMagicHeart(event) {
             p.style.opacity = '0';
             p.style.transform = 'scale(0.4) rotate(' + (Math.random() * 180 - 90) + 'deg)';
             
-            // Remove elements from DOM completely after fade out completes
             setTimeout(function() { p.remove(); }, 1500);
         });
 
-        // Reset click lock so she can enjoy it again if she wants
         setTimeout(function() {
             isAnimationRunning = false;
         }, 1500);
 
-    }, 5000); // 5000 milliseconds = 5 seconds holding time
+    }, 5000); 
 }
 
 var heartAnim,heartName='Sanu';
